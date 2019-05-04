@@ -2,56 +2,64 @@
 <head>
   <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>A tool for RNG testing</title>
+  <title>``Crush'' your random number generator</title>
 </head>
 
 <body>
 
 <h2>Links</h2>
 
-Source code: <a href="files/crush-0.1.tar.gz">crush-0.1.tar.gz</a><br>
+Source code: <a href="https://github.com/dbastos0/crush">repository</a>, <a href="files/crush-0.1.tar.gz">crush-0.1.tar.gz</a><br>
 Win32 binary: <a href="files/crush.exe">crush.exe</a> (sha1sum: d9e6a6785da772ed5f65a1d9b0319805029bc86f)<br>
-Documentation: <a href="files/crush.pdf">crush.pdf</a><br>
+Documentation: <a href="files/crush.pdf">crush.pdf</a>, <a href="files/randomness.pdf">paper</a>.<br>
 
 <h2>Introduction</h2>
 
+Crush is a command-line program that lets you run your random number
+generator against the batteries of statistical tests from
+the <a href="http://simul.iro.umontreal.ca/testu01/tu01.html">TestU01</a>
+library with only using your shell.  This work was presented at the
+2019 IEEE International Workshop on Metrology for Industry 4.0 and
+IoT.
 
 <h2>Installing crush</h2>
 
-If you're on Windows, we recommend you the binary crush.exe.  Run it
-as per our examples below.  If you're on UNIX, you'll need to compile
-TestU01 first.  For most systems, the following commands should
-suffice:
+If you're on Windows, we recommend you the
+binary <a href="files/crush.exe">crush.exe</a>. If you're on UNIX,
+you'll need to compile TestU01 first.  For most systems, the following
+commands should suffice:
 
+<pre>
+$ wget http://simul.iro.umontreal.ca/testu01/TestU01.zip
 $ unzip TestU01.zip
-[...]
 $ cd TestU01-1.2.3/
 $ ./configure
-[...]
 $ make 
-[...]
 $ sudo make install
+</pre>
 
 Now the TestU01 libraries are installed.  To compile crush, tell your
 shell:
 
-wget http:.../
-tar zxf crush-0.1.tar.gz
-cd crush-0.1
-touch crush.c
-make 
-make install
+<pre>
+$ wget https://dbastos0.github.io/crush/files/crush-0.1.tar.gz
+$ tar zxf crush-0.1.tar.gz
+$ cd crush-0.1
+$ make 
+$ sudo make install
+</pre>
 
-Now crush is installed in your /usr/local/bin.  To test your system's
-generator, tell your shell:
+Now crush is installed in your <tt>/usr/local/bin</tt>.  To test your
+system's generator, tell your shell:
 
+<pre>
 $ cat /dev/urandom | crush -b small -n /dev/urandom
 [...]
+</pre>
 
 <h2>Thanks</h2>
 
-We would like to thank the SHCDCiber for partial funding for this
-project.
+We would like to thank SHCDCiber for partially funding this project.
 
 <!-- <a name="history"</a> -->
 <!-- <h2>History</h2> -->
