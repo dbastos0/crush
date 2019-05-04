@@ -1,0 +1,64 @@
+<html>
+<head>
+  <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A tool for RNG testing</title>
+</head>
+
+<body>
+
+<h2>Links</h2>
+
+Source code: <a href="files/crush-0.1.tar.gz">crush-0.1.tar.gz</a><br>
+Win32 binary: <a href="files/crush.exe">crush.exe</a> (sha1sum: d9e6a6785da772ed5f65a1d9b0319805029bc86f)<br>
+Documentation: <a href="files/crush.pdf">crush.pdf</a><br>
+
+<h2>Introduction</h2>
+
+
+<h2>Installing crush</h2>
+
+If you're on Windows, we recommend you the binary crush.exe.  Run it
+as per our examples below.  If you're on UNIX, you'll need to compile
+TestU01 first.  For most systems, the following commands should
+suffice:
+
+$ unzip TestU01.zip
+[...]
+$ cd TestU01-1.2.3/
+$ ./configure
+[...]
+$ make 
+[...]
+$ sudo make install
+
+Now the TestU01 libraries are installed.  To compile crush, tell your
+shell:
+
+wget http:.../
+tar zxf crush-0.1.tar.gz
+cd crush-0.1
+touch crush.c
+make 
+make install
+
+Now crush is installed in your /usr/local/bin.  To test your system's
+generator, tell your shell:
+
+$ cat /dev/urandom | crush -b small -n /dev/urandom
+[...]
+
+<h2>Thanks</h2>
+
+We would like to thank the SHCDCiber for partial funding for this
+project.
+
+<!-- <a name="history"</a> -->
+<!-- <h2>History</h2> -->
+<!-- <br><br> -->
+<!-- <a href="files/crush-0.1.tar.gz">crush-0.1.tar.gz</a><br> -->
+
+<br><br>
+Created: Sat May  4 14:43:49 -03 2019.<br> 
+Updated: Sat May  4 14:43:59 -03 2019.<br>
+</body>
