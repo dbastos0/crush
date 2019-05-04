@@ -20,6 +20,9 @@ doc: crush.nw
 	noweave -filter 'dpp -tex' -delay -index -autodefs c crush.nw > crush.tex
 	pdflatex crush.tex
 
+package:
+	git archive --format=tar --prefix=crush-$(v)/ HEAD | gzip > crush-$(v).tar.gz
+
 clean: 
 	rm -f *.dvi *.log *.aux *.bbl *.bcf *.blg *.run.xml
 	rm -f crush *.o
