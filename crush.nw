@@ -21,13 +21,15 @@
 %\setlength{\textwidth}{150mm}
 
 \documentclass[a4paper,12pt]{article}
-\usepackage{geometry}
- \geometry{
- a4paper,
- total={170mm,257mm},
- left=20mm,
- top=20mm,
- }
+\usepackage[text={6.5in,10in},centering]{geometry}
+
+%% \usepackage{geometry}
+%%  \geometry{
+%%  a4paper,
+%%  total={170mm,257mm},
+%%  left=20mm,
+%%  top=20mm,
+%%  }
 
 \usepackage[backend=biber]{biblatex}
 \addbibresource{refs.bib}
@@ -64,12 +66,12 @@
 
 \section*{This document}
 
-This document describes how to use a program for testing random number
-generators using the TestU01
+This document describes the implementation of [[crush]], a program for
+testing random number generators using the TestU01
 library~\cite{l2005testu01,l2007testu01,l2009testu01}. It is at the
-same time the program's source code and its documentation.  It was
+same time the program's source code and its documentation: it is
 written in the literate programming~\cite{knuth1984literate,
-  knuth1994cweb, ramsey1994literate} spirit.  A literate program
+knuth1994cweb, ramsey1994literate} spirit.  A literate program
 interleaves program source code and documentation in the same
 document.
 
@@ -90,7 +92,7 @@ distinguish chunks defined on the same page.
 
 \section*{The [[crush]] program}
 
-The program being implement in this document is called [[crush]].
+The program implemented in this document is called [[crush]].
 
 \begin{verbatim}
 %./crush --help
@@ -200,18 +202,17 @@ If we ran out of data from the [[stdin]], then [[fread]] returns 0, in
 which case we have an error situation.  Either the generator has
 stopped producing data, or some other unexpected situation occurred.
 We must stop.  A generator should be infinite, so, having nothing
-sensible to do, we must stop\footnote{Stopping here is a problem if
-  you're, say, testing randomness from an RNG whose data is in a file
-  on disk.  As long as your file contains sufficient data for the
-  chosen battery of tests of TestU01, you should have no problem.
-  This program will consome your file as much it needs to and produce
-  a complete report.  If, however, your file doesn't contain enough
-  data for the chosen battery, an error will be produced and no report
-  will be given.  In such situations, the package {\em PractRand} is
-  more convenient than the library TestU01 because it incrementally
-  tests your data, using more and more data from your file up until
-  your generator fails a test, when it stops --- going up to a maximum
-  of 32TiB of data.}.
+sensible to do, we stop\footnote{This error condition will happen if
+you're testing randomness from an RNG whose data is in a file on disk
+and there is not enough data in the file for the chosen battery of
+tests.  The sensible solution is to get a larger file.  {\tt
+BigCrush}, the large battery of tests from the TestU01 library, can
+consume 11427162949792 bits of data, that is, a little over 3TiB.  If
+you have very little data, the package {\em
+PractRand}~\cite{practrand} is more convenient than the library
+TestU01 because it incrementally tests your data, using more and more
+data from your file up until your generator fails a test, when it
+stops --- going up to a maximum of 32TiB of data.}.
 
 Having filled [[buffer]] as much as possible, we can return a random
 number and increment [[pos]].  That completes our generic generator.
@@ -227,7 +228,7 @@ unsigned int generator(void)
   
   if (pos >= limit) {
     /* refill the buffer and continue by restarting at 0 */
-    limit = fread(buffer, sizeof (unsigned int), (sizeof buffer) / sizeof(unsigned int), stdin);
+    limit = fread(buffer, sizeof(unsigned int), (sizeof buffer)/sizeof(unsigned int), stdin);
 
     if (limit == 0) {
       // We read 0 bytes.  This either means we found EOF or we have 
