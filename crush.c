@@ -1,8 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
+#ifdef WIN32
+#include <fcntl.h> /* _O_BINARY */
+#include <io.h>  /* _setmode() */
+#endif
 #include "TestU01.h"
 
 void usage(void);
@@ -12,14 +17,14 @@ char *program_name; /* a pointer to argv[0] */
 
 unsigned int generator(void)
 {
+  static uint64_t nbytes;
   static unsigned int buffer[8192 / sizeof (unsigned int)];
   static unsigned int pos; /* where is our number? */
   static unsigned int limit; /* where does the data in the buffer end? */
   
   if (pos >= limit) {
     /* refill the buffer and continue by restarting at 0 */
-    limit = fread(buffer, sizeof (unsigned int), (sizeof buffer) / sizeof(unsigned int), stdin);
-
+    limit = fread(buffer, sizeof(unsigned int), (sizeof buffer)/sizeof(unsigned int), stdin);
     if (limit == 0) {
       // We read 0 bytes.  This either means we found EOF or we have 
       // an error.  A decent generator is infinite, so this should never
@@ -28,17 +33,17 @@ unsigned int generator(void)
         perror("fread"); exit(-1);
       }
       if (feof(stdin) != 0) {
-        printf("generator produced eof\n");
+        printf("generator produced eof after %lld bytes\n", nbytes);
         exit(0);
       }
     }
-    
-    pos = 0;
 
+    nbytes += limit * sizeof (unsigned int);
+    pos = 0;
   }
   
   unsigned int random = buffer[pos]; /* get one */
-  pos = pos + 1;
+  pos += 1;
   return random;
 }
 int main(int argc, char **argv)
@@ -94,7 +99,10 @@ int main(int argc, char **argv)
       fprintf(stdout, "Error: you must give a name to your generator\n");
       usage();
     }
-
+  #ifdef WIN32
+    _setmode(_fileno( stdin), _O_BINARY);
+    _setmode(_fileno(stdout), _O_BINARY);
+  #endif
 
   unif01_Gen* g = unif01_CreateExternGenBits(name, generator);
 

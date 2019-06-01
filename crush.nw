@@ -53,6 +53,8 @@
 \def\nwendcode{\endtrivlist \endgroup}
 \let\nwdocspar=\par
 
+\noweboptions{longxref}
+
 \author{Daniel Chicayban Bastos\\
         Luis Antonio Brasil Kowada}
 
@@ -71,20 +73,20 @@ testing random number generators using the TestU01
 library~\cite{l2005testu01,l2007testu01,l2009testu01}. It is at the
 same time the program's source code and its documentation: it is
 written in the literate programming~\cite{knuth1984literate,
-knuth1994cweb, ramsey1994literate} spirit.  A literate program
-interleaves program source code and documentation in the same
-document.
+knuth1994cweb, ramsey1994literate} spirit.  
 
-When chunks of code are displayed on a page of this document, you will
-find an integer on the left margin of that page.  This integer
-specifies the page on which the chunk of code is written.  
+A literate program interleaves program source code and documentation
+in the same document.  When chunks of code are displayed on a page of
+this document, you will find an integer on the left margin of that
+page.  This integer specifies the page on which the chunk of code is
+written.
 
 Flushed to the right, you will find a number written between
 parentheses.  That number references the page on which the code chunk
-is used.  Such number does not appear when we define a source code
-file, as is the case of the chunk [[crush.c]], the first chunk
-defined.  So, when you're reading a chunk, you can look to the right
-and you will know which page that chunk is used.
+is used.  So, when you're reading a chunk, you can look to the right
+and you will know which page that chunk is used.  If no such number
+appear, it's because a root chunk is being defined.  A root chunk is
+used when we define a new source code file.
 
 If a chunk is referenced by an integer and by a letter, that means
 there's more than one chunk defined on the same page, so letters
@@ -218,10 +220,11 @@ Having filled [[buffer]] as much as possible, we can return a random
 number and increment [[pos]].  That completes our generic generator.
 Now that you have read the strategy, you can see it implemented below
 and read again our description above if necessary.
-
+ 
 <<a generic generator>>=
 unsigned int generator(void)
 {
+  static uint64_t nbytes;
   static unsigned int buffer[8192 / sizeof (unsigned int)];
   static unsigned int pos; /* where is our number? */
   static unsigned int limit; /* where does the data in the buffer end? */
@@ -229,7 +232,6 @@ unsigned int generator(void)
   if (pos >= limit) {
     /* refill the buffer and continue by restarting at 0 */
     limit = fread(buffer, sizeof(unsigned int), (sizeof buffer)/sizeof(unsigned int), stdin);
-
     if (limit == 0) {
       // We read 0 bytes.  This either means we found EOF or we have 
       // an error.  A decent generator is infinite, so this should never
@@ -238,17 +240,17 @@ unsigned int generator(void)
         perror("fread"); exit(-1);
       }
       if (feof(stdin) != 0) {
-        printf("generator produced eof\n");
+        printf("generator produced eof after %lld bytes\n", nbytes);
         exit(0);
       }
     }
-    
-    pos = 0;
 
+    nbytes += limit * sizeof (unsigned int);
+    pos = 0;
   }
   
   unsigned int random = buffer[pos]; /* get one */
-  pos = pos + 1;
+  pos += 1;
   return random;
 }
 @
@@ -275,6 +277,7 @@ int main(int argc, char **argv)
   memset(name, '\0', sizeof name);
 
   <<option parsing et cetera>>
+  <<put stdin and stdout in binary mode>>
 
   unif01_Gen* g = unif01_CreateExternGenBits(name, generator);
 
@@ -344,8 +347,24 @@ support and check that user choices are sensible.
     fprintf(stdout, "Error: you must give a name to your generator\n");
     usage();
   }
+@
 
-@ \section*{Other chunks}
+On Win32 systems, we must explicitly put [[stdin]] and [[stdout]] in
+binary mode.  Otherwise, there'll be some byte translations occuring
+on our backs.  For example, if you write byte [['\n']] to the
+[[stdout]], the system will make sure to add byte [['\r']] before
+writing byte [['\n']] because Win32 systems use the sequence
+[["\r\n"]] as line separator.  There seems to be no way of doing this
+portably.
+
+<<put stdin and stdout in binary mode>>=
+#ifdef WIN32
+  _setmode(_fileno( stdin), _O_BINARY);
+  _setmode(_fileno(stdout), _O_BINARY);
+#endif
+@ 
+
+\section*{Other chunks}
 
 Now helper functions, headers and declarations.  Nothing out of the
 ordinary.
@@ -374,9 +393,14 @@ void usage(void) {
 <<header and declarations>>=
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
+#ifdef WIN32
+#include <fcntl.h> /* _O_BINARY */
+#include <io.h>  /* _setmode() */
+#endif
 #include "TestU01.h"
 
 void usage(void);

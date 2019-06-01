@@ -53,6 +53,8 @@
 \def\nwendcode{\endtrivlist \endgroup}
 \let\nwdocspar=\par
 
+\noweboptions{longxref}
+
 \author{Daniel Chicayban Bastos\\
         Luis Antonio Brasil Kowada}
 
@@ -71,20 +73,20 @@ testing random number generators using the TestU01
 library~\cite{l2005testu01,l2007testu01,l2009testu01}. It is at the
 same time the program's source code and its documentation: it is
 written in the literate programming~\cite{knuth1984literate,
-knuth1994cweb, ramsey1994literate} spirit.  A literate program
-interleaves program source code and documentation in the same
-document.
+knuth1994cweb, ramsey1994literate} spirit.  
 
-When chunks of code are displayed on a page of this document, you will
-find an integer on the left margin of that page.  This integer
-specifies the page on which the chunk of code is written.  
+A literate program interleaves program source code and documentation
+in the same document.  When chunks of code are displayed on a page of
+this document, you will find an integer on the left margin of that
+page.  This integer specifies the page on which the chunk of code is
+written.
 
 Flushed to the right, you will find a number written between
 parentheses.  That number references the page on which the code chunk
-is used.  Such number does not appear when we define a source code
-file, as is the case of the chunk {\Tt{}\Rm{}{\it{}crush}.{\it{}c}\nwendquote}, the first chunk
-defined.  So, when you're reading a chunk, you can look to the right
-and you will know which page that chunk is used.
+is used.  So, when you're reading a chunk, you can look to the right
+and you will know which page that chunk is used.  If no such number
+appear, it's because a root chunk is being defined.  A root chunk is
+used when we define a new source code file.
 
 If a chunk is referenced by an integer and by a letter, that means
 there's more than one chunk defined on the same page, so letters
@@ -218,10 +220,11 @@ Having filled {\Tt{}\Rm{}{\it{}buffer}\nwendquote} as much as possible, we can r
 number and increment {\Tt{}\Rm{}{\it{}pos}\nwendquote}.  That completes our generic generator.
 Now that you have read the strategy, you can see it implemented below
 and read again our description above if necessary.
-
+ 
 \nwenddocs{}\nwbegincode{3}\sublabel{NW1iLVcl-PfqK8-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW1iLVcl-PfqK8-1}}}\moddef{a generic generator~{\nwtagstyle{}\subpageref{NW1iLVcl-PfqK8-1}}}\endmoddef\Rm{}\nwstartdeflinemarkup\nwusesondefline{\\{NW1iLVcl-1oTVZB-1}}\nwenddeflinemarkup
 {\bf{}unsigned} {\bf{}int} {\it{}generator}({\bf{}void})\nwindexdefn{\nwixident{generator}}{generator}{NW1iLVcl-PfqK8-1}
 {\nwlbrace}
+  {\bf{}static} {\it{}uint64\_t} {\it{}nbytes};
   {\bf{}static} {\bf{}unsigned} {\bf{}int} {\it{}buffer}[8192 \begin{math}\div\end{math} {\bf{}sizeof} ({\bf{}unsigned} {\bf{}int})];
   {\bf{}static} {\bf{}unsigned} {\bf{}int} {\it{}pos}; {\commopen}\begcomm{} where is our number? \endcomm{}{\commclose}
   {\bf{}static} {\bf{}unsigned} {\bf{}int} {\it{}limit}; {\commopen}\begcomm{} where does the data in the buffer end? \endcomm{}{\commclose}
@@ -229,7 +232,6 @@ and read again our description above if necessary.
   {\bf{}if} ({\it{}pos} \begin{math}\geq\end{math} {\it{}limit}) {\nwlbrace}
     {\commopen}\begcomm{} refill the buffer and continue by restarting at 0 \endcomm{}{\commclose}
     {\it{}limit} = {\it{}fread}({\it{}buffer}, {\bf{}sizeof}({\bf{}unsigned} {\bf{}int}), ({\bf{}sizeof} {\it{}buffer})\begin{math}\div\end{math}{\bf{}sizeof}({\bf{}unsigned} {\bf{}int}), {\it{}stdin});
-
     {\bf{}if} ({\it{}limit} \begin{math}\equiv\end{math} 0) {\nwlbrace}
       \begcomm{}// We read 0 bytes.  This either means we found EOF or we have \endcomm{}
       \begcomm{}// an error.  A decent generator is infinite, so this should never\endcomm{}
@@ -238,17 +240,17 @@ and read again our description above if necessary.
         {\it{}perror}({\tt{}"fread"}); {\bf{}exit}(-1);
       {\nwrbrace}
       {\bf{}if} ({\it{}feof}({\it{}stdin}) \begin{math}\neq\end{math} 0) {\nwlbrace}
-        {\it{}printf}({\tt{}"generator produced eof{\char92}n"});
+        {\it{}printf}({\tt{}"generator produced eof after %lld bytes{\char92}n"}, {\it{}nbytes});
         {\bf{}exit}(0);
       {\nwrbrace}
     {\nwrbrace}
-    
-    {\it{}pos} = 0;
 
+    {\it{}nbytes} += {\it{}limit} \begin{math}\ast\end{math} {\bf{}sizeof} ({\bf{}unsigned} {\bf{}int});
+    {\it{}pos} = 0;
   {\nwrbrace}
   
   {\bf{}unsigned} {\bf{}int} {\it{}random} = {\it{}buffer}[{\it{}pos}]; {\commopen}\begcomm{} get one \endcomm{}{\commclose}
-  {\it{}pos} = {\it{}pos} + 1;
+  {\it{}pos} += 1;
   {\bf{}return} {\it{}random};
 {\nwrbrace}
 \nwused{\\{NW1iLVcl-1oTVZB-1}}\nwidentdefs{\\{{\nwixident{generator}}{generator}}}\nwendcode{}\nwbegindocs{4}\nwdocspar
@@ -275,6 +277,7 @@ we're done, so it can free the allocated resources.
   {\it{}memset}({\it{}name}, {\tt{}'{\char92}0'}, {\bf{}sizeof} {\it{}name});
 
   \LA{}option parsing et cetera~{\nwtagstyle{}\subpageref{NW1iLVcl-3Ncanh-1}}\RA{}
+  \LA{}put stdin and stdout in binary mode~{\nwtagstyle{}\subpageref{NW1iLVcl-3NGjJL-1}}\RA{}
 
   {\it{}unif01\_Gen}\begin{math}\ast\end{math} {\it{}g} = {\it{}unif01\_CreateExternGenBits}({\it{}name}, {\it{}generator});
 
@@ -344,13 +347,29 @@ support and check that user choices are sensible.
     {\it{}fprintf}({\it{}stdout}, {\tt{}"Error: you must give a name to your generator{\char92}n"});
     {\it{}usage}();
   {\nwrbrace}
+\nwused{\\{NW1iLVcl-1Pi9cp-1}}\nwendcode{}\nwbegindocs{8}\nwdocspar
 
-\nwused{\\{NW1iLVcl-1Pi9cp-1}}\nwendcode{}\nwbegindocs{8}\section*{Other chunks}
+On Win32 systems, we must explicitly put {\Tt{}\Rm{}{\it{}stdin}\nwendquote} and {\Tt{}\Rm{}{\it{}stdout}\nwendquote} in
+binary mode.  Otherwise, there'll be some byte translations occuring
+on our backs.  For example, if you write byte {\Tt{}\Rm{}{\tt{}'{\char92}n'}\nwendquote} to the
+{\Tt{}\Rm{}{\it{}stdout}\nwendquote}, the system will make sure to add byte {\Tt{}\Rm{}{\tt{}'{\char92}r'}\nwendquote} before
+writing byte {\Tt{}\Rm{}{\tt{}'{\char92}n'}\nwendquote} because Win32 systems use the sequence
+{\Tt{}\Rm{}{\tt{}"{\char92}r{\char92}n"}\nwendquote} as line separator.  There seems to be no way of doing this
+portably.
+
+\nwenddocs{}\nwbegincode{9}\sublabel{NW1iLVcl-3NGjJL-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW1iLVcl-3NGjJL-1}}}\moddef{put stdin and stdout in binary mode~{\nwtagstyle{}\subpageref{NW1iLVcl-3NGjJL-1}}}\endmoddef\Rm{}\nwstartdeflinemarkup\nwusesondefline{\\{NW1iLVcl-1Pi9cp-1}}\nwenddeflinemarkup
+{\bf{}\char35{}ifdef}{\tt{} WIN32}
+  {\it{}\_setmode}({\it{}\_fileno}( {\it{}stdin}), {\it{}\_O\_BINARY});
+  {\it{}\_setmode}({\it{}\_fileno}({\it{}stdout}), {\it{}\_O\_BINARY});
+{\bf{}\char35{}endif}{\tt{}}
+\nwused{\\{NW1iLVcl-1Pi9cp-1}}\nwendcode{}\nwbegindocs{10}\nwdocspar
+
+\section*{Other chunks}
 
 Now helper functions, headers and declarations.  Nothing out of the
 ordinary.
 
-\nwenddocs{}\nwbegincode{9}\sublabel{NW1iLVcl-3EEkjx-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW1iLVcl-3EEkjx-1}}}\moddef{other functions~{\nwtagstyle{}\subpageref{NW1iLVcl-3EEkjx-1}}}\endmoddef\Rm{}\nwstartdeflinemarkup\nwusesondefline{\\{NW1iLVcl-1oTVZB-1}}\nwenddeflinemarkup
+\nwenddocs{}\nwbegincode{11}\sublabel{NW1iLVcl-3EEkjx-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW1iLVcl-3EEkjx-1}}}\moddef{other functions~{\nwtagstyle{}\subpageref{NW1iLVcl-3EEkjx-1}}}\endmoddef\Rm{}\nwstartdeflinemarkup\nwusesondefline{\\{NW1iLVcl-1oTVZB-1}}\nwenddeflinemarkup
 {\bf{}int} {\it{}is\_valid\_battery}({\bf{}char} \begin{math}\ast\end{math}{\it{}optarg}) {\nwlbrace}\nwindexdefn{\nwixident{is{\_}valid{\_}battery}}{is:unvalid:unbattery}{NW1iLVcl-3EEkjx-1}
   {\bf{}if} ({\it{}strncmp}({\tt{}"small"}, {\it{}optarg}, {\bf{}sizeof} {\tt{}"small"}) \begin{math}\equiv\end{math} 0) {\bf{}return} 0;
   {\bf{}if} ({\it{}strncmp}({\tt{}"medium"}, {\it{}optarg}, {\bf{}sizeof} {\tt{}"medium"}) \begin{math}\equiv\end{math} 0) {\bf{}return} 0;
@@ -371,12 +390,17 @@ ordinary.
   {\bf{}exit}(0);
 {\nwrbrace}
 
-\nwused{\\{NW1iLVcl-1oTVZB-1}}\nwidentdefs{\\{{\nwixident{is{\_}valid{\_}battery}}{is:unvalid:unbattery}}\\{{\nwixident{usage}}{usage}}}\nwendcode{}\nwbegincode{10}\sublabel{NW1iLVcl-2UDuHk-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW1iLVcl-2UDuHk-1}}}\moddef{header and declarations~{\nwtagstyle{}\subpageref{NW1iLVcl-2UDuHk-1}}}\endmoddef\Rm{}\nwstartdeflinemarkup\nwusesondefline{\\{NW1iLVcl-1oTVZB-1}}\nwenddeflinemarkup
+\nwused{\\{NW1iLVcl-1oTVZB-1}}\nwidentdefs{\\{{\nwixident{is{\_}valid{\_}battery}}{is:unvalid:unbattery}}\\{{\nwixident{usage}}{usage}}}\nwendcode{}\nwbegincode{12}\sublabel{NW1iLVcl-2UDuHk-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW1iLVcl-2UDuHk-1}}}\moddef{header and declarations~{\nwtagstyle{}\subpageref{NW1iLVcl-2UDuHk-1}}}\endmoddef\Rm{}\nwstartdeflinemarkup\nwusesondefline{\\{NW1iLVcl-1oTVZB-1}}\nwenddeflinemarkup
 {\bf{}\char35{}include}{\tt{} \begin{math}<\end{math}stdlib.h\begin{math}>\end{math}}
 {\bf{}\char35{}include}{\tt{} \begin{math}<\end{math}stdio.h\begin{math}>\end{math}}
+{\bf{}\char35{}include}{\tt{} \begin{math}<\end{math}stdint.h\begin{math}>\end{math}}
 {\bf{}\char35{}include}{\tt{} \begin{math}<\end{math}string.h\begin{math}>\end{math}}
 {\bf{}\char35{}include}{\tt{} \begin{math}<\end{math}unistd.h\begin{math}>\end{math}}
 {\bf{}\char35{}include}{\tt{} \begin{math}<\end{math}getopt.h\begin{math}>\end{math}}
+{\bf{}\char35{}ifdef}{\tt{} WIN32}
+{\bf{}\char35{}include}{\tt{} \begin{math}<\end{math}fcntl.h\begin{math}>\end{math} /* \_O\_BINARY */}
+{\bf{}\char35{}include}{\tt{} \begin{math}<\end{math}io.h\begin{math}>\end{math}  /* \_setmode() */}
+{\bf{}\char35{}endif}{\tt{}}
 {\bf{}\char35{}include}{\tt{} "TestU01.h"}
 
 {\bf{}void} {\it{}usage}({\bf{}void});
@@ -391,13 +415,14 @@ ordinary.
 \nwixlogsorted{c}{{header and declarations}{NW1iLVcl-2UDuHk-1}{\nwixu{NW1iLVcl-1oTVZB-1}\nwixd{NW1iLVcl-2UDuHk-1}}}%
 \nwixlogsorted{c}{{option parsing et cetera}{NW1iLVcl-3Ncanh-1}{\nwixu{NW1iLVcl-1Pi9cp-1}\nwixd{NW1iLVcl-3Ncanh-1}}}%
 \nwixlogsorted{c}{{other functions}{NW1iLVcl-3EEkjx-1}{\nwixu{NW1iLVcl-1oTVZB-1}\nwixd{NW1iLVcl-3EEkjx-1}}}%
+\nwixlogsorted{c}{{put stdin and stdout in binary mode}{NW1iLVcl-3NGjJL-1}{\nwixu{NW1iLVcl-1Pi9cp-1}\nwixd{NW1iLVcl-3NGjJL-1}}}%
 \nwixlogsorted{c}{{the main function}{NW1iLVcl-1Pi9cp-1}{\nwixu{NW1iLVcl-1oTVZB-1}\nwixd{NW1iLVcl-1Pi9cp-1}}}%
 \nwixlogsorted{i}{{\nwixident{generator}}{generator}}%
 \nwixlogsorted{i}{{\nwixident{is{\_}valid{\_}battery}}{is:unvalid:unbattery}}%
 \nwixlogsorted{i}{{\nwixident{main}}{main}}%
 \nwixlogsorted{i}{{\nwixident{program{\_}name}}{program:unname}}%
 \nwixlogsorted{i}{{\nwixident{usage}}{usage}}%
-\nwbegindocs{11}\printbibliography
+\nwbegindocs{13}\printbibliography
 
 \section*{Chunk list}
 \nowebchunks
