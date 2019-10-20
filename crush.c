@@ -33,7 +33,7 @@ unsigned int generator(void)
         perror("fread"); exit(-1);
       }
       if (feof(stdin) != 0) {
-        printf("generator produced eof after %lld bytes\n", nbytes);
+        printf("generator produced eof after %ld bytes\n", nbytes);
         exit(0);
       }
     }

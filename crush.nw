@@ -20,8 +20,8 @@
 %\setlength{\marginparpush}{1.0cm}
 %\setlength{\textwidth}{150mm}
 
-\documentclass[a4paper,12pt]{article}
-\usepackage[text={6.5in,10in},centering]{geometry}
+\documentclass[a4paper,11pt]{article}
+\usepackage[text={6.75in,10in},centering]{geometry}
 
 %% \usepackage{geometry}
 %%  \geometry{
@@ -43,7 +43,7 @@
 \allowdisplaybreaks
 \usepackage{lmodern}
 \usepackage{noweb}
-
+\noweboptions{longchunks,longxref,smallcode}
 % redefine this command so we can allow code to break across
 % multiple pages
 
@@ -53,18 +53,18 @@
 \def\nwendcode{\endtrivlist \endgroup}
 \let\nwdocspar=\par
 
-\noweboptions{longxref}
-
 \author{Daniel Chicayban Bastos\\
         Luis Antonio Brasil Kowada}
 
 \title{The implementation of [[crush]]}
 \date{May 5th 2019}
 
-\begin{document} \maketitle
+\begin{document}
+\fontfamily{cmr}\selectfont
+\maketitle
 
-\setlength{\parskip}{7pt}
-\setlength{\parindent}{0pt}
+%\setlength{\parskip}{7pt}
+%\setlength{\parindent}{0pt}
 
 \section*{This document}
 
@@ -81,12 +81,12 @@ this document, you will find an integer on the left margin of that
 page.  This integer specifies the page on which the chunk of code is
 written.
 
-Flushed to the right, you will find a number written between
-parentheses.  That number references the page on which the code chunk
-is used.  So, when you're reading a chunk, you can look to the right
-and you will know which page that chunk is used.  If no such number
-appear, it's because a root chunk is being defined.  A root chunk is
-used when we define a new source code file.
+% Flushed to the right, you will find a number written between
+% parentheses.  That number references the page on which the code chunk
+% is used.  So, when you're reading a chunk, you can look to the right
+% and you will know which page that chunk is used.  If no such number
+% appear, it's because a root chunk is being defined.  A root chunk is
+% used when we define a new source code file.
 
 If a chunk is referenced by an integer and by a letter, that means
 there's more than one chunk defined on the same page, so letters
@@ -112,12 +112,12 @@ xorshift32 | crush -b small -n xorshift32
 %
 \end{verbatim}
 
-Suppose we have a program called [[xs32]], which is an implementation
-of George Marsaglia's {\em xorshift} pseudo-random number generator
-with output size of 32 bits.  Assume [[xs32]] writes its random
-numbers in binary, in little-endian format, to the standard output.
-To test this generator against the small battery of the library
-TestU01, we can say the following to the UNIX shell:
+Suppose we have a program called [[xs32]], which implements George
+Marsaglia's {\em xorshift} pseudo-random number generator with an
+output size of 32 bits.  Assume [[xs32]] writes its random numbers in
+binary, in little-endian format, to the standard output.  To test this
+generator against the small battery of the library TestU01, we can say
+the following to the UNIX shell:
 
 \begin{verbatim}
 %./xs32 | crush -b small -n xs32
@@ -161,7 +161,6 @@ understanding how the program works.
 <<a generic generator>>
 <<the main function>>
 <<other functions>>
-
 @ \subsection*{A generic generator} 
 
 This is the most important part of [[crush]].  Given the typical
@@ -209,12 +208,12 @@ you're testing randomness from an RNG whose data is in a file on disk
 and there is not enough data in the file for the chosen battery of
 tests.  The sensible solution is to get a larger file.  {\tt
 BigCrush}, the large battery of tests from the TestU01 library, can
-consume 11427162949792 bits of data, that is, a little over 3TiB.  If
-you have very little data, the package {\em
+consume up to 1428420566888 bytes of data, which is approximately 1330
+GiB.  If you have very little data, the package {\em
 PractRand}~\cite{practrand} is more convenient than the library
 TestU01 because it incrementally tests your data, using more and more
 data from your file up until your generator fails a test, when it
-stops --- going up to a maximum of 32TiB of data.}.
+stops, going up to a maximum of 32 TiB of data.}.
 
 Having filled [[buffer]] as much as possible, we can return a random
 number and increment [[pos]].  That completes our generic generator.
@@ -240,7 +239,7 @@ unsigned int generator(void)
         perror("fread"); exit(-1);
       }
       if (feof(stdin) != 0) {
-        printf("generator produced eof after %lld bytes\n", nbytes);
+        printf("generator produced eof after %ld bytes\n", nbytes);
         exit(0);
       }
     }
@@ -253,8 +252,8 @@ unsigned int generator(void)
   pos += 1;
   return random;
 }
-@
-
+@ %def generator
+%keyword uint64_t stdin stdout stderr
 \subsection*{The [[main]] function}
 
 This program is essentially the generic function we implemented above.
@@ -299,9 +298,7 @@ int main(int argc, char **argv)
   unif01_DeleteExternGenBits(g);
   return 0;
 }
-
-@ Notice we abstracted option parsing.  We define here the options we
-support and check that user choices are sensible.
+@ Here's the options we support with sensible user choices checked.
 
 <<option parsing et cetera>>=
   static struct option long_options[] = {
@@ -347,9 +344,7 @@ support and check that user choices are sensible.
     fprintf(stdout, "Error: you must give a name to your generator\n");
     usage();
   }
-@
-
-On Win32 systems, we must explicitly put [[stdin]] and [[stdout]] in
+@ On Win32 systems, we must explicitly put [[stdin]] and [[stdout]] in
 binary mode.  Otherwise, there'll be some byte translations occuring
 on our backs.  For example, if you write byte [['\n']] to the
 [[stdout]], the system will make sure to add byte [['\r']] before
@@ -362,12 +357,9 @@ portably.
   _setmode(_fileno( stdin), _O_BINARY);
   _setmode(_fileno(stdout), _O_BINARY);
 #endif
-@ 
+@ \section*{Other chunks}
 
-\section*{Other chunks}
-
-Now helper functions, headers and declarations.  Nothing out of the
-ordinary.
+Nothing out of the ordinary here.
 
 <<other functions>>=
 int is_valid_battery(char *optarg) {
@@ -388,7 +380,8 @@ void usage(void) {
   "-n, --name       The name of your generator\n"
   "-h, --help       Display this information\n");
   exit(0);
-}
+} 
+@ %def is_valid_battery usage
 
 <<header and declarations>>=
 #include <stdlib.h>
@@ -401,14 +394,14 @@ void usage(void) {
 #include <fcntl.h> /* _O_BINARY */
 #include <io.h>  /* _setmode() */
 #endif
-#include "TestU01.h"
+#include <TestU01.h>
 
 void usage(void);
 int is_valid_battery(char *optarg);
 int min(int a, int b);
 char *program_name; /* a pointer to argv[0] */
-
-@ \printbibliography
+@
+\printbibliography
 
 \section*{Chunk list}
 \nowebchunks

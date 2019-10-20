@@ -20,8 +20,8 @@
 %\setlength{\marginparpush}{1.0cm}
 %\setlength{\textwidth}{150mm}
 
-\documentclass[a4paper,12pt]{article}
-\usepackage[text={6.5in,10in},centering]{geometry}
+\documentclass[a4paper,11pt]{article}
+\usepackage[text={6.75in,10in},centering]{geometry}
 
 %% \usepackage{geometry}
 %%  \geometry{
@@ -43,7 +43,7 @@
 \allowdisplaybreaks
 \usepackage{lmodern}
 \usepackage{noweb}
-
+\noweboptions{longchunks,longxref,smallcode}
 % redefine this command so we can allow code to break across
 % multiple pages
 
@@ -53,18 +53,18 @@
 \def\nwendcode{\endtrivlist \endgroup}
 \let\nwdocspar=\par
 
-\noweboptions{longxref}
-
 \author{Daniel Chicayban Bastos\\
         Luis Antonio Brasil Kowada}
 
 \title{The implementation of {\Tt{}\Rm{}{\it{}crush}\nwendquote}}
 \date{May 5th 2019}
 
-\begin{document} \maketitle
+\begin{document}
+\fontfamily{cmr}\selectfont
+\maketitle
 
-\setlength{\parskip}{7pt}
-\setlength{\parindent}{0pt}
+%\setlength{\parskip}{7pt}
+%\setlength{\parindent}{0pt}
 
 \section*{This document}
 
@@ -81,12 +81,12 @@ this document, you will find an integer on the left margin of that
 page.  This integer specifies the page on which the chunk of code is
 written.
 
-Flushed to the right, you will find a number written between
-parentheses.  That number references the page on which the code chunk
-is used.  So, when you're reading a chunk, you can look to the right
-and you will know which page that chunk is used.  If no such number
-appear, it's because a root chunk is being defined.  A root chunk is
-used when we define a new source code file.
+% Flushed to the right, you will find a number written between
+% parentheses.  That number references the page on which the code chunk
+% is used.  So, when you're reading a chunk, you can look to the right
+% and you will know which page that chunk is used.  If no such number
+% appear, it's because a root chunk is being defined.  A root chunk is
+% used when we define a new source code file.
 
 If a chunk is referenced by an integer and by a letter, that means
 there's more than one chunk defined on the same page, so letters
@@ -112,12 +112,12 @@ xorshift32 | crush -b small -n xorshift32
 %
 \end{verbatim}
 
-Suppose we have a program called {\Tt{}\Rm{}{\it{}xs32}\nwendquote}, which is an implementation
-of George Marsaglia's {\em xorshift} pseudo-random number generator
-with output size of 32 bits.  Assume {\Tt{}\Rm{}{\it{}xs32}\nwendquote} writes its random
-numbers in binary, in little-endian format, to the standard output.
-To test this generator against the small battery of the library
-TestU01, we can say the following to the UNIX shell:
+Suppose we have a program called {\Tt{}\Rm{}{\it{}xs32}\nwendquote}, which implements George
+Marsaglia's {\em xorshift} pseudo-random number generator with an
+output size of 32 bits.  Assume {\Tt{}\Rm{}{\it{}xs32}\nwendquote} writes its random numbers in
+binary, in little-endian format, to the standard output.  To test this
+generator against the small battery of the library TestU01, we can say
+the following to the UNIX shell:
 
 \begin{verbatim}
 %./xs32 | crush -b small -n xs32
@@ -161,18 +161,17 @@ understanding how the program works.
 \LA{}a generic generator~{\nwtagstyle{}\subpageref{NW1iLVcl-PfqK8-1}}\RA{}
 \LA{}the main function~{\nwtagstyle{}\subpageref{NW1iLVcl-1Pi9cp-1}}\RA{}
 \LA{}other functions~{\nwtagstyle{}\subpageref{NW1iLVcl-3EEkjx-1}}\RA{}
-
 \nwnotused{crush.c}\nwendcode{}\nwbegindocs{2}\subsection*{A generic generator} 
 
 This is the most important part of {\Tt{}\Rm{}{\it{}crush}\nwendquote}.  Given the typical
 usage of TestU01, we would like to implement a generator in C which
-gets its source of randomness from the {\Tt{}\Rm{}{\it{}stdin}\nwendquote} and not from an
+gets its source of randomness from the {\Tt{}\Rm{}{\bf{}stdin}\nwendquote} and not from an
 arithmetical procedure.  By getting the random numbers from the
-{\Tt{}\Rm{}{\it{}stdin}\nwendquote}, we can feed the program different types of RNG output
+{\Tt{}\Rm{}{\bf{}stdin}\nwendquote}, we can feed the program different types of RNG output
 without having to write another C program for testing against TestU01.
 
 This generator consumes its bytes in binary, so if you're writing a
-RNG, it should write its random numbers to the {\Tt{}\Rm{}{\it{}stdout}\nwendquote} with, for
+RNG, it should write its random numbers to the {\Tt{}\Rm{}{\bf{}stdout}\nwendquote} with, for
 example, the {\Tt{}\Rm{}{\it{}fwrite}\nwendquote} function from the standard C library.  We also
 assume all data is always written in little-endian.
 
@@ -190,7 +189,7 @@ the reading logic is as follows.  For {\Tt{}\Rm{}{\it{}buffer}\nwendquote} manag
 two variables, {\Tt{}\Rm{}{\it{}pos}\nwendquote} and {\Tt{}\Rm{}{\it{}limit}\nwendquote}.  While {\Tt{}\Rm{}{\it{}pos}\nwendquote} is used to mark
 the next number that the function must return, {\Tt{}\Rm{}{\it{}limit}\nwendquote} divides the
 buffer into two parts, left and right.  To the left of {\Tt{}\Rm{}{\it{}limit}\nwendquote},
-there are random numbers read from the {\Tt{}\Rm{}{\it{}stdin}\nwendquote}; to the right, there
+there are random numbers read from the {\Tt{}\Rm{}{\bf{}stdin}\nwendquote}; to the right, there
 is empty space, space we didn't use yet: we don't know if the
 {\Tt{}\Rm{}{\it{}fread}\nwendquote} call will fill up {\Tt{}\Rm{}{\it{}buffer}\nwendquote} completely, so, in such cases,
 we must know we've read our last valid number and refill {\Tt{}\Rm{}{\it{}buffer}\nwendquote}
@@ -200,7 +199,7 @@ If {\Tt{}\Rm{}{\it{}pos}\nwendquote} would point to a number that's ``on the rig
 {\Tt{}\Rm{}{\it{}buffer}\nwendquote}, than we would produce invalid data.  Instead, we must
 refill the {\Tt{}\Rm{}{\it{}buffer}\nwendquote}.
 
-If we ran out of data from the {\Tt{}\Rm{}{\it{}stdin}\nwendquote}, then {\Tt{}\Rm{}{\it{}fread}\nwendquote} returns 0, in
+If we ran out of data from the {\Tt{}\Rm{}{\bf{}stdin}\nwendquote}, then {\Tt{}\Rm{}{\it{}fread}\nwendquote} returns 0, in
 which case we have an error situation.  Either the generator has
 stopped producing data, or some other unexpected situation occurred.
 We must stop.  A generator should be infinite, so, having nothing
@@ -209,12 +208,12 @@ you're testing randomness from an RNG whose data is in a file on disk
 and there is not enough data in the file for the chosen battery of
 tests.  The sensible solution is to get a larger file.  {\tt
 BigCrush}, the large battery of tests from the TestU01 library, can
-consume 11427162949792 bits of data, that is, a little over 3TiB.  If
-you have very little data, the package {\em
+consume up to 1428420566888 bytes of data, which is approximately 1330
+GiB.  If you have very little data, the package {\em
 PractRand}~\cite{practrand} is more convenient than the library
 TestU01 because it incrementally tests your data, using more and more
 data from your file up until your generator fails a test, when it
-stops --- going up to a maximum of 32TiB of data.}.
+stops, going up to a maximum of 32 TiB of data.}.
 
 Having filled {\Tt{}\Rm{}{\it{}buffer}\nwendquote} as much as possible, we can return a random
 number and increment {\Tt{}\Rm{}{\it{}pos}\nwendquote}.  That completes our generic generator.
@@ -222,25 +221,25 @@ Now that you have read the strategy, you can see it implemented below
 and read again our description above if necessary.
  
 \nwenddocs{}\nwbegincode{3}\sublabel{NW1iLVcl-PfqK8-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW1iLVcl-PfqK8-1}}}\moddef{a generic generator~{\nwtagstyle{}\subpageref{NW1iLVcl-PfqK8-1}}}\endmoddef\Rm{}\nwstartdeflinemarkup\nwusesondefline{\\{NW1iLVcl-1oTVZB-1}}\nwenddeflinemarkup
-{\bf{}unsigned} {\bf{}int} {\it{}generator}({\bf{}void})\nwindexdefn{\nwixident{generator}}{generator}{NW1iLVcl-PfqK8-1}
+{\bf{}unsigned} {\bf{}int} {\it{}generator}({\bf{}void})
 {\nwlbrace}
-  {\bf{}static} {\it{}uint64\_t} {\it{}nbytes};
+  {\bf{}static} {\bf{}uint64\_t} {\it{}nbytes};
   {\bf{}static} {\bf{}unsigned} {\bf{}int} {\it{}buffer}[8192 \begin{math}\div\end{math} {\bf{}sizeof} ({\bf{}unsigned} {\bf{}int})];
   {\bf{}static} {\bf{}unsigned} {\bf{}int} {\it{}pos}; {\commopen}\begcomm{} where is our number? \endcomm{}{\commclose}
   {\bf{}static} {\bf{}unsigned} {\bf{}int} {\it{}limit}; {\commopen}\begcomm{} where does the data in the buffer end? \endcomm{}{\commclose}
   
   {\bf{}if} ({\it{}pos} \begin{math}\geq\end{math} {\it{}limit}) {\nwlbrace}
     {\commopen}\begcomm{} refill the buffer and continue by restarting at 0 \endcomm{}{\commclose}
-    {\it{}limit} = {\it{}fread}({\it{}buffer}, {\bf{}sizeof}({\bf{}unsigned} {\bf{}int}), ({\bf{}sizeof} {\it{}buffer})\begin{math}\div\end{math}{\bf{}sizeof}({\bf{}unsigned} {\bf{}int}), {\it{}stdin});
+    {\it{}limit} = {\it{}fread}({\it{}buffer}, {\bf{}sizeof}({\bf{}unsigned} {\bf{}int}), ({\bf{}sizeof} {\it{}buffer})\begin{math}\div\end{math}{\bf{}sizeof}({\bf{}unsigned} {\bf{}int}), {\bf{}stdin});
     {\bf{}if} ({\it{}limit} \begin{math}\equiv\end{math} 0) {\nwlbrace}
       \begcomm{}// We read 0 bytes.  This either means we found EOF or we have \endcomm{}
       \begcomm{}// an error.  A decent generator is infinite, so this should never\endcomm{}
       \begcomm{}// happen.\endcomm{}
-      {\bf{}if} ({\it{}ferror}({\it{}stdin}) \begin{math}\neq\end{math} 0) {\nwlbrace}
+      {\bf{}if} ({\it{}ferror}({\bf{}stdin}) \begin{math}\neq\end{math} 0) {\nwlbrace}
         {\it{}perror}({\tt{}"fread"}); {\bf{}exit}(-1);
       {\nwrbrace}
-      {\bf{}if} ({\it{}feof}({\it{}stdin}) \begin{math}\neq\end{math} 0) {\nwlbrace}
-        {\it{}printf}({\tt{}"generator produced eof after %lld bytes{\char92}n"}, {\it{}nbytes});
+      {\bf{}if} ({\it{}feof}({\bf{}stdin}) \begin{math}\neq\end{math} 0) {\nwlbrace}
+        {\it{}printf}({\tt{}"generator produced eof after %ld bytes{\char92}n"}, {\it{}nbytes});
         {\bf{}exit}(0);
       {\nwrbrace}
     {\nwrbrace}
@@ -253,8 +252,8 @@ and read again our description above if necessary.
   {\it{}pos} += 1;
   {\bf{}return} {\it{}random};
 {\nwrbrace}
-\nwused{\\{NW1iLVcl-1oTVZB-1}}\nwidentdefs{\\{{\nwixident{generator}}{generator}}}\nwendcode{}\nwbegindocs{4}\nwdocspar
-
+\nwindexdefn{\nwixident{generator}}{generator}{NW1iLVcl-PfqK8-1}\eatline
+\nwused{\\{NW1iLVcl-1oTVZB-1}}\nwidentdefs{\\{{\nwixident{generator}}{generator}}}\nwendcode{}\nwbegindocs{4}%
 \subsection*{The {\Tt{}\Rm{}{\it{}main}\nwendquote} function}
 
 This program is essentially the generic function we implemented above.
@@ -266,7 +265,7 @@ the generator, but we must call {\Tt{}\Rm{}{\it{}unif01\_DeleteExternGenBits}\nw
 we're done, so it can free the allocated resources.
 
 \nwenddocs{}\nwbegincode{5}\sublabel{NW1iLVcl-1Pi9cp-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW1iLVcl-1Pi9cp-1}}}\moddef{the main function~{\nwtagstyle{}\subpageref{NW1iLVcl-1Pi9cp-1}}}\endmoddef\Rm{}\nwstartdeflinemarkup\nwusesondefline{\\{NW1iLVcl-1oTVZB-1}}\nwenddeflinemarkup
-{\bf{}int} {\it{}main}({\bf{}int} {\it{}argc}, {\bf{}char} \begin{math}\ast\end{math}\begin{math}\ast\end{math}{\it{}argv})\nwindexdefn{\nwixident{main}}{main}{NW1iLVcl-1Pi9cp-1}
+{\bf{}int} {\it{}main}({\bf{}int} {\it{}argc}, {\bf{}char} \begin{math}\ast\end{math}\begin{math}\ast\end{math}{\it{}argv})
 {\nwlbrace}
   {\bf{}char} {\it{}battery}[8]; {\commopen}\begcomm{} values small, medium or big \endcomm{}{\commclose}
   {\bf{}char} {\it{}name}[1000]; {\commopen}\begcomm{} the name of the generator given by user \endcomm{}{\commclose}
@@ -293,15 +292,13 @@ we're done, so it can free the allocated resources.
     {\it{}bbattery\_BigCrush}({\it{}g});
   {\nwrbrace}
   {\bf{}else} {\nwlbrace}
-    {\it{}fprintf}({\it{}stdout}, {\tt{}"never reached{\char92}n"});
+    {\it{}fprintf}({\bf{}stdout}, {\tt{}"never reached{\char92}n"});
   {\nwrbrace}
   
   {\it{}unif01\_DeleteExternGenBits}({\it{}g});
   {\bf{}return} 0;
 {\nwrbrace}
-
-\nwused{\\{NW1iLVcl-1oTVZB-1}}\nwidentdefs{\\{{\nwixident{main}}{main}}}\nwendcode{}\nwbegindocs{6}Notice we abstracted option parsing.  We define here the options we
-support and check that user choices are sensible.
+\nwused{\\{NW1iLVcl-1oTVZB-1}}\nwendcode{}\nwbegindocs{6}Here's the options we support with sensible user choices checked.
 
 \nwenddocs{}\nwbegincode{7}\sublabel{NW1iLVcl-3Ncanh-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW1iLVcl-3Ncanh-1}}}\moddef{option parsing et cetera~{\nwtagstyle{}\subpageref{NW1iLVcl-3Ncanh-1}}}\endmoddef\Rm{}\nwstartdeflinemarkup\nwusesondefline{\\{NW1iLVcl-1Pi9cp-1}}\nwenddeflinemarkup
   {\bf{}static} {\bf{}struct} {\it{}option} {\it{}long\_options}[] = {\nwlbrace}
@@ -318,7 +315,7 @@ support and check that user choices are sensible.
     {\bf{}switch}({\it{}option}) {\nwlbrace}
       {\bf{}case} {\tt{}'b'}: {\commopen}\begcomm{} b as in battery (of tests) \endcomm{}{\commclose}
       {\bf{}if} ({\it{}is\_valid\_battery}({\it{}optarg}) \begin{math}<\end{math} 0) {\nwlbrace}
-          {\it{}fprintf}({\it{}stdout}, {\tt{}"Error: valid batteries are small, medium, big.{\char92}n"});
+          {\it{}fprintf}({\bf{}stdout}, {\tt{}"Error: valid batteries are small, medium, big.{\char92}n"});
           {\it{}usage}();
         {\nwrbrace}
         
@@ -339,58 +336,54 @@ support and check that user choices are sensible.
     
   {\commopen}\begcomm{} check if user has given all necessary things \endcomm{}{\commclose}
   {\bf{}if} ({\it{}is\_valid\_battery}({\it{}battery}) \begin{math}<\end{math} 0) {\nwlbrace}
-    {\it{}fprintf}({\it{}stdout}, {\tt{}"Error: valid batteries are small, medium, big{\char92}n"});
+    {\it{}fprintf}({\bf{}stdout}, {\tt{}"Error: valid batteries are small, medium, big{\char92}n"});
     {\it{}usage}();
   {\nwrbrace}
   
   {\bf{}if} ({\it{}strlen}({\it{}name}) \begin{math}\equiv\end{math} 0) {\nwlbrace}
-    {\it{}fprintf}({\it{}stdout}, {\tt{}"Error: you must give a name to your generator{\char92}n"});
+    {\it{}fprintf}({\bf{}stdout}, {\tt{}"Error: you must give a name to your generator{\char92}n"});
     {\it{}usage}();
   {\nwrbrace}
-\nwused{\\{NW1iLVcl-1Pi9cp-1}}\nwendcode{}\nwbegindocs{8}\nwdocspar
-
-On Win32 systems, we must explicitly put {\Tt{}\Rm{}{\it{}stdin}\nwendquote} and {\Tt{}\Rm{}{\it{}stdout}\nwendquote} in
+\nwused{\\{NW1iLVcl-1Pi9cp-1}}\nwendcode{}\nwbegindocs{8}On Win32 systems, we must explicitly put {\Tt{}\Rm{}{\bf{}stdin}\nwendquote} and {\Tt{}\Rm{}{\bf{}stdout}\nwendquote} in
 binary mode.  Otherwise, there'll be some byte translations occuring
 on our backs.  For example, if you write byte {\Tt{}\Rm{}{\tt{}'{\char92}n'}\nwendquote} to the
-{\Tt{}\Rm{}{\it{}stdout}\nwendquote}, the system will make sure to add byte {\Tt{}\Rm{}{\tt{}'{\char92}r'}\nwendquote} before
+{\Tt{}\Rm{}{\bf{}stdout}\nwendquote}, the system will make sure to add byte {\Tt{}\Rm{}{\tt{}'{\char92}r'}\nwendquote} before
 writing byte {\Tt{}\Rm{}{\tt{}'{\char92}n'}\nwendquote} because Win32 systems use the sequence
 {\Tt{}\Rm{}{\tt{}"{\char92}r{\char92}n"}\nwendquote} as line separator.  There seems to be no way of doing this
 portably.
 
 \nwenddocs{}\nwbegincode{9}\sublabel{NW1iLVcl-3NGjJL-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW1iLVcl-3NGjJL-1}}}\moddef{put stdin and stdout in binary mode~{\nwtagstyle{}\subpageref{NW1iLVcl-3NGjJL-1}}}\endmoddef\Rm{}\nwstartdeflinemarkup\nwusesondefline{\\{NW1iLVcl-1Pi9cp-1}}\nwenddeflinemarkup
 {\bf{}\char35{}ifdef}{\tt{} WIN32}
-  {\it{}\_setmode}({\it{}\_fileno}( {\it{}stdin}), {\it{}\_O\_BINARY});
-  {\it{}\_setmode}({\it{}\_fileno}({\it{}stdout}), {\it{}\_O\_BINARY});
+  {\it{}\_setmode}({\it{}\_fileno}( {\bf{}stdin}), {\it{}\_O\_BINARY});
+  {\it{}\_setmode}({\it{}\_fileno}({\bf{}stdout}), {\it{}\_O\_BINARY});
 {\bf{}\char35{}endif}{\tt{}}
-\nwused{\\{NW1iLVcl-1Pi9cp-1}}\nwendcode{}\nwbegindocs{10}\nwdocspar
+\nwused{\\{NW1iLVcl-1Pi9cp-1}}\nwendcode{}\nwbegindocs{10}\section*{Other chunks}
 
-\section*{Other chunks}
-
-Now helper functions, headers and declarations.  Nothing out of the
-ordinary.
+Nothing out of the ordinary here.
 
 \nwenddocs{}\nwbegincode{11}\sublabel{NW1iLVcl-3EEkjx-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW1iLVcl-3EEkjx-1}}}\moddef{other functions~{\nwtagstyle{}\subpageref{NW1iLVcl-3EEkjx-1}}}\endmoddef\Rm{}\nwstartdeflinemarkup\nwusesondefline{\\{NW1iLVcl-1oTVZB-1}}\nwenddeflinemarkup
-{\bf{}int} {\it{}is\_valid\_battery}({\bf{}char} \begin{math}\ast\end{math}{\it{}optarg}) {\nwlbrace}\nwindexdefn{\nwixident{is{\_}valid{\_}battery}}{is:unvalid:unbattery}{NW1iLVcl-3EEkjx-1}
+{\bf{}int} {\it{}is\_valid\_battery}({\bf{}char} \begin{math}\ast\end{math}{\it{}optarg}) {\nwlbrace}
   {\bf{}if} ({\it{}strncmp}({\tt{}"small"}, {\it{}optarg}, {\bf{}sizeof} {\tt{}"small"}) \begin{math}\equiv\end{math} 0) {\bf{}return} 0;
   {\bf{}if} ({\it{}strncmp}({\tt{}"medium"}, {\it{}optarg}, {\bf{}sizeof} {\tt{}"medium"}) \begin{math}\equiv\end{math} 0) {\bf{}return} 0;
   {\bf{}if} ({\it{}strncmp}({\tt{}"big"}, {\it{}optarg}, {\bf{}sizeof} {\tt{}"big"}) \begin{math}\equiv\end{math} 0) {\bf{}return} 0;
   {\bf{}return} -1;
 {\nwrbrace}
 
-{\bf{}void} {\it{}usage}({\bf{}void}) {\nwlbrace}\nwindexdefn{\nwixident{usage}}{usage}{NW1iLVcl-3EEkjx-1}
-  {\it{}fprintf}({\it{}stdout}, {\tt{}"Usage: %s [options]{\char92}n"}, {\it{}program\_name});
-  {\it{}fprintf}({\it{}stdout}, {\tt{}" Tests your data for randomness against TestU01.{\char92}n{\char92}n"});
-  {\it{}fprintf}({\it{}stdout}, {\tt{}"Examples:{\char92}n"});
-  {\it{}fprintf}({\it{}stdout}, {\tt{}"cat /dev/urandom | crush -b small -n 'the local generator'{\char92}n"});
-  {\it{}fprintf}({\it{}stdout}, {\tt{}"xorshift32 | crush -b small -n xorshift32{\char92}n{\char92}n"});
-  {\it{}fprintf}({\it{}stdout}, {\tt{}" The options are:{\char92}n"}
+{\bf{}void} {\it{}usage}({\bf{}void}) {\nwlbrace}
+  {\it{}fprintf}({\bf{}stdout}, {\tt{}"Usage: %s [options]{\char92}n"}, {\it{}program\_name});
+  {\it{}fprintf}({\bf{}stdout}, {\tt{}" Tests your data for randomness against TestU01.{\char92}n{\char92}n"});
+  {\it{}fprintf}({\bf{}stdout}, {\tt{}"Examples:{\char92}n"});
+  {\it{}fprintf}({\bf{}stdout}, {\tt{}"cat /dev/urandom | crush -b small -n 'the local generator'{\char92}n"});
+  {\it{}fprintf}({\bf{}stdout}, {\tt{}"xorshift32 | crush -b small -n xorshift32{\char92}n{\char92}n"});
+  {\it{}fprintf}({\bf{}stdout}, {\tt{}" The options are:{\char92}n"}
   {\tt{}"-b, --battery    Your choice of battery (small, medium, big){\char92}n"}
   {\tt{}"-n, --name       The name of your generator{\char92}n"}
   {\tt{}"-h, --help       Display this information{\char92}n"});
   {\bf{}exit}(0);
-{\nwrbrace}
-
-\nwused{\\{NW1iLVcl-1oTVZB-1}}\nwidentdefs{\\{{\nwixident{is{\_}valid{\_}battery}}{is:unvalid:unbattery}}\\{{\nwixident{usage}}{usage}}}\nwendcode{}\nwbegincode{12}\sublabel{NW1iLVcl-2UDuHk-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW1iLVcl-2UDuHk-1}}}\moddef{header and declarations~{\nwtagstyle{}\subpageref{NW1iLVcl-2UDuHk-1}}}\endmoddef\Rm{}\nwstartdeflinemarkup\nwusesondefline{\\{NW1iLVcl-1oTVZB-1}}\nwenddeflinemarkup
+{\nwrbrace} 
+\nwindexdefn{\nwixident{is{\_}valid{\_}battery}}{is:unvalid:unbattery}{NW1iLVcl-3EEkjx-1}\nwindexdefn{\nwixident{usage}}{usage}{NW1iLVcl-3EEkjx-1}\eatline
+\nwused{\\{NW1iLVcl-1oTVZB-1}}\nwidentdefs{\\{{\nwixident{is{\_}valid{\_}battery}}{is:unvalid:unbattery}}\\{{\nwixident{usage}}{usage}}}\nwendcode{}\nwbegindocs{12}\nwdocspar
+\nwenddocs{}\nwbegincode{13}\sublabel{NW1iLVcl-2UDuHk-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW1iLVcl-2UDuHk-1}}}\moddef{header and declarations~{\nwtagstyle{}\subpageref{NW1iLVcl-2UDuHk-1}}}\endmoddef\Rm{}\nwstartdeflinemarkup\nwusesondefline{\\{NW1iLVcl-1oTVZB-1}}\nwenddeflinemarkup
 {\bf{}\char35{}include}{\tt{} \begin{math}<\end{math}stdlib.h\begin{math}>\end{math}}
 {\bf{}\char35{}include}{\tt{} \begin{math}<\end{math}stdio.h\begin{math}>\end{math}}
 {\bf{}\char35{}include}{\tt{} \begin{math}<\end{math}stdint.h\begin{math}>\end{math}}
@@ -406,9 +399,8 @@ ordinary.
 {\bf{}void} {\it{}usage}({\bf{}void});
 {\bf{}int} {\it{}is\_valid\_battery}({\bf{}char} \begin{math}\ast\end{math}{\it{}optarg});
 {\bf{}int} {\it{}min}({\bf{}int} {\it{}a}, {\bf{}int} {\it{}b});
-{\bf{}char} \begin{math}\ast\end{math}{\it{}program\_name}; {\commopen}\begcomm{} a pointer to argv[0] \endcomm{}{\commclose}\nwindexdefn{\nwixident{program{\_}name}}{program:unname}{NW1iLVcl-2UDuHk-1}
-
-\nwused{\\{NW1iLVcl-1oTVZB-1}}\nwidentdefs{\\{{\nwixident{program{\_}name}}{program:unname}}}\nwendcode{}
+{\bf{}char} \begin{math}\ast\end{math}{\it{}program\_name}; {\commopen}\begcomm{} a pointer to argv[0] \endcomm{}{\commclose}
+\nwused{\\{NW1iLVcl-1oTVZB-1}}\nwendcode{}
 
 \nwixlogsorted{c}{{a generic generator}{NW1iLVcl-PfqK8-1}{\nwixu{NW1iLVcl-1oTVZB-1}\nwixd{NW1iLVcl-PfqK8-1}}}%
 \nwixlogsorted{c}{{crush.c}{NW1iLVcl-1oTVZB-1}{\nwixd{NW1iLVcl-1oTVZB-1}}}%
@@ -419,10 +411,9 @@ ordinary.
 \nwixlogsorted{c}{{the main function}{NW1iLVcl-1Pi9cp-1}{\nwixu{NW1iLVcl-1oTVZB-1}\nwixd{NW1iLVcl-1Pi9cp-1}}}%
 \nwixlogsorted{i}{{\nwixident{generator}}{generator}}%
 \nwixlogsorted{i}{{\nwixident{is{\_}valid{\_}battery}}{is:unvalid:unbattery}}%
-\nwixlogsorted{i}{{\nwixident{main}}{main}}%
-\nwixlogsorted{i}{{\nwixident{program{\_}name}}{program:unname}}%
 \nwixlogsorted{i}{{\nwixident{usage}}{usage}}%
-\nwbegindocs{13}\printbibliography
+\nwbegindocs{14}\nwdocspar
+\printbibliography
 
 \section*{Chunk list}
 \nowebchunks
