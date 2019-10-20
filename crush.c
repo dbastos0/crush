@@ -8,13 +8,12 @@
 #include <fcntl.h> /* _O_BINARY */
 #include <io.h>  /* _setmode() */
 #endif
-#include "TestU01.h"
+#include <TestU01.h>
 
 void usage(void);
 int is_valid_battery(char *optarg);
 int min(int a, int b);
 char *program_name; /* a pointer to argv[0] */
-
 unsigned int generator(void)
 {
   static uint64_t nbytes;
@@ -124,7 +123,6 @@ int main(int argc, char **argv)
   unif01_DeleteExternGenBits(g);
   return 0;
 }
-
 int is_valid_battery(char *optarg) {
   if (strncmp("small", optarg, sizeof "small") == 0) return 0;
   if (strncmp("medium", optarg, sizeof "medium") == 0) return 0;
@@ -143,6 +141,4 @@ void usage(void) {
   "-n, --name       The name of your generator\n"
   "-h, --help       Display this information\n");
   exit(0);
-}
-
-
+} 
